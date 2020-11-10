@@ -96,15 +96,12 @@ fn intersect(ray: &Ray, sphere: &Sphere) -> (bool, Vec3, Vec3) {
     (false, Vec3::new(), Vec3::new())
 }
 
-fn shade(res: &(bool, Vec3, Vec3), light_pos: &Vec3) -> (i32, i32, i32) {
-    let light_dir = normalize(&sub(&light_pos, &res.1));
-    let shading = dot(&res.2, &light_dir).max(0.0);
+fn shade(hit_pos: &Vec3, normal: &Vec3, light_pos: &Vec3) -> (i32, i32, i32) {
+    let light_dir = normalize(&sub(&light_pos, &hit_pos));
+    let shading = dot(&normal, &light_dir).max(0.0);
     let color = (shading * 255.0).round() as i32;
     (color, color, color)
 }
-
-
-
 
 fn main() -> Result<()> {
     let mut img = File::create("img.ppm")?;
@@ -118,9 +115,9 @@ fn main() -> Result<()> {
         for w in 0..size {
             let mut color = (h/2, w/2, 128);
             let ray = gen_ray(&w, &h, &size);
-            let res = intersect(&ray, &sphere);
-            if res.0 {
-                color = shade(&res, &light_pos);
+            let (is_hit, hit_pos, normal) = intersect(&ray, &sphere);
+            if is_hit {
+                color = shade(&hit_pos, &normal, &light_pos);
             }
             write!(img, "{} {} {}\n", color.0, color.1, color.2)?;
         }
@@ -128,4 +125,3 @@ fn main() -> Result<()> {
 
     Ok(())
 }
-
