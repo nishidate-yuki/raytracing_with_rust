@@ -86,14 +86,14 @@ fn intersect(ray: &Ray, sphere: &Sphere) -> (bool, Vec3, Vec3) {
                 - sphere.radius * sphere.radius;
     let d = b*b - a*c;
 
-    if d > 0.0 {
-        let dist = -b - d.sqrt();
-        let pos = add(&ray.origin, &mul(&ray.direction, &dist));
-        let normal = normalize(&sub(&pos, &sphere.center));
-        return (true, pos, normal);
+    if d < 0.0 {
+        return (false, Vec3::new(), Vec3::new());
     }
-    
-    (false, Vec3::new(), Vec3::new())
+
+    let dist = -b - d.sqrt();
+    let pos = add(&ray.origin, &mul(&ray.direction, &dist));
+    let normal = normalize(&sub(&pos, &sphere.center));
+    (true, pos, normal)
 }
 
 fn shade(hit_pos: &Vec3, normal: &Vec3, light_pos: &Vec3) -> (i32, i32, i32) {
@@ -104,8 +104,8 @@ fn shade(hit_pos: &Vec3, normal: &Vec3, light_pos: &Vec3) -> (i32, i32, i32) {
 }
 
 fn main() -> Result<()> {
-    let mut img = File::create("img.ppm")?;
     let size = 512;
+    let mut img = File::create("img.ppm")?;
     write!(img, "P3\n{} {}\n255\n", size, size)?;
     
     let sphere = Sphere::new();
